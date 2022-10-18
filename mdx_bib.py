@@ -3,12 +3,12 @@ from markdown.preprocessors import Preprocessor
 from markdown.treeprocessors import Treeprocessor
 from markdown.postprocessors import Postprocessor
 from markdown.inlinepatterns import Pattern
-from markdown.util import etree
 
 from pybtex.database.input import bibtex
 
 from collections import OrderedDict
 import re
+from xml.etree import ElementTree as etree
 
 BRACKET_RE = re.compile(r'\[([^\[]+)\]')
 CITE_RE    = re.compile(r'@(\w+)')
@@ -190,14 +190,14 @@ class CitationsExtension(Extension):
             self.getConfig('order'),
         )
 
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         md.registerExtension(self)
         self.parser = md.parser
         self.md = md
 
-        md.preprocessors.add("mdx_bib",  CitationsPreprocessor(self.bib), "<reference")
-        md.inlinePatterns.add("mdx_bib", CitationsPattern(CITATION_RE, self.bib), "<reference")
-        md.treeprocessors.add("mdx_bib", CitationsTreeprocessor(self.bib), "_begin")
+        md.preprocessors.register(CitationsPreprocessor(self.bib), "mdx_bib", 15)
+        md.inlinePatterns.register(CitationsPattern(CITATION_RE, self.bib), "mdx_bib", 175)
+        md.treeprocessors.register(CitationsTreeprocessor(self.bib), "mdx_bib", 25)
 
 def makeExtension(*args, **kwargs):
     return CitationsExtension(*args, **kwargs)
